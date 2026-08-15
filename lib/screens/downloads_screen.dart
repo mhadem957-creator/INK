@@ -90,7 +90,7 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
           Container(height: 2.5, color: MangaTheme.inkOf(context)),
           Expanded(
             child: _filtered.isEmpty
-                ? _buildEmpty()
+                ? _buildEmpty(context)
                 : ListView.separated(
                     padding: const EdgeInsets.all(12),
                     itemCount: _filtered.length,
@@ -102,10 +102,12 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
                         onPause: () => _service.pause(item.taskId),
                         onResume: () => _service.resume(item.taskId),
                         onCancel: () => _service.cancel(item.taskId),
-                        onRemove: () => _service.remove(item.taskId, deleteFile: true),
+                        onRemove: () =>
+                            _service.remove(item.taskId, deleteFile: true),
                         onOpen: () async {
                           final result = await _service.openFile(item);
-                          if (context.mounted && result.type != ResultType.done) {
+                          if (context.mounted &&
+                              result.type != ResultType.done) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text(result.message)),
                             );
@@ -120,14 +122,18 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
     );
   }
 
-  Widget _buildEmpty() {
+  Widget _buildEmpty(BuildContext context) {
     return Center(
       child: MangaContainer(
         padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.download_outlined, size: 48, color: MangaTheme.inkOf(context).withOpacity(0.5)),
+            Icon(
+              Icons.download_outlined,
+              size: 48,
+              color: MangaTheme.inkOf(context).withOpacity(0.5),
+            ),
             const SizedBox(height: 12),
             const Text(
               'NO DOWNLOADS YET',
@@ -140,7 +146,9 @@ class _DownloadsScreenState extends State<DownloadsScreen> {
             const SizedBox(height: 6),
             Text(
               'Detected media files will appear here.',
-              style: TextStyle(color: MangaTheme.inkOf(context).withOpacity(0.6)),
+              style: TextStyle(
+                color: MangaTheme.inkOf(context).withOpacity(0.6),
+              ),
             ),
           ],
         ),
@@ -175,6 +183,8 @@ class _DownloadTile extends StatelessWidget {
     final isFailed = item.status == DownloadTaskStatus.failed ||
         item.status == DownloadTaskStatus.canceled;
 
+    final ink = MangaTheme.inkOf(context);
+
     return MangaContainer(
       padding: const EdgeInsets.all(14),
       child: Column(
@@ -182,7 +192,7 @@ class _DownloadTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              _categoryIcon(item.category),
+              _categoryIcon(context, item.category),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -197,7 +207,7 @@ class _DownloadTile extends StatelessWidget {
               ),
               Text(
                 item.category.toUpperCase(),
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
                   color: MangaTheme.crimson,
@@ -246,10 +256,10 @@ class _DownloadTile extends StatelessWidget {
           if (isFailed)
             Text(
               item.status == DownloadTaskStatus.canceled ? 'CANCELED' : 'FAILED',
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w900,
                 fontSize: 11,
-                color: MangaTheme.inkOf(context),
+                color: ink,
                 letterSpacing: 1,
               ),
             ),
@@ -259,17 +269,17 @@ class _DownloadTile extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               if (isRunning)
-                _actionBtn(Icons.pause, 'Pause', onPause),
+                _actionBtn(context, Icons.pause, 'Pause', onPause),
               if (isPaused)
-                _actionBtn(Icons.play_arrow, 'Resume', onResume),
+                _actionBtn(context, Icons.play_arrow, 'Resume', onResume),
               if (isRunning || isPaused)
-                _actionBtn(Icons.close, 'Cancel', onCancel),
+                _actionBtn(context, Icons.close, 'Cancel', onCancel),
               if (isComplete) ...[
-                _actionBtn(Icons.open_in_new, 'Open', onOpen),
-                _actionBtn(Icons.delete_outline, 'Delete', onRemove),
+                _actionBtn(context, Icons.open_in_new, 'Open', onOpen),
+                _actionBtn(context, Icons.delete_outline, 'Delete', onRemove),
               ],
               if (isFailed)
-                _actionBtn(Icons.delete_outline, 'Remove', onRemove),
+                _actionBtn(context, Icons.delete_outline, 'Remove', onRemove),
             ],
           ),
         ],
@@ -277,7 +287,7 @@ class _DownloadTile extends StatelessWidget {
     );
   }
 
-  Widget _categoryIcon(String cat) {
+  Widget _categoryIcon(BuildContext context, String cat) {
     IconData icon;
     switch (cat) {
       case 'Music':
@@ -295,18 +305,25 @@ class _DownloadTile extends StatelessWidget {
       default:
         icon = Icons.insert_drive_file;
     }
+    final ink = MangaTheme.inkOf(context);
     return Container(
       width: 36,
       height: 36,
       decoration: BoxDecoration(
         color: MangaTheme.paperMutedOf(context),
-        border: Border.all(color: MangaTheme.inkOf(context), width: 2),
+        border: Border.all(color: ink, width: 2),
       ),
-      child: Icon(icon, size: 20, color: MangaTheme.inkOf(context)),
+      child: Icon(icon, size: 20, color: ink),
     );
   }
 
-  Widget _actionBtn(IconData icon, String tooltip, VoidCallback onTap) {
+  Widget _actionBtn(
+    BuildContext context,
+    IconData icon,
+    String tooltip,
+    VoidCallback onTap,
+  ) {
+    final ink = MangaTheme.inkOf(context);
     return Padding(
       padding: const EdgeInsets.only(left: 6),
       child: Material(
@@ -316,10 +333,10 @@ class _DownloadTile extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              border: Border.all(color: MangaTheme.inkOf(context), width: 2),
+              border: Border.all(color: ink, width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: MangaTheme.inkOf(context),
+                  color: ink,
                   offset: const Offset(2, 2),
                   blurRadius: 0,
                 ),
